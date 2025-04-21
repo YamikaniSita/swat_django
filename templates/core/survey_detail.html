@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2>{{ survey.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">{{ survey.description }}</p>
+                    <div class="mb-3">
+                        <strong>Project:</strong> {{ survey.project.name }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Status:</strong> {{ survey.get_status_display }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Period:</strong> {{ survey.start_date|date:"M d, Y" }} - {{ survey.end_date|date:"M d, Y" }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Survey Analytics</h3>
+                </div>
+                <div class="card-body">
+                    {% if analytics.word_map %}
+                        <h4>Word Map</h4>
+                        <div class="text-center mb-4">
+                            <img src="data:image/png;base64,{{ analytics.word_map }}" 
+                                 alt="Word Map" class="img-fluid">
+                        </div>
+                    {% endif %}
+                    
+                    {% if analytics.topics %}
+                        <h4>Main Topics</h4>
+                        <ul class="list-group mb-4">
+                        {% for topic in analytics.topics %}
+                            <li class="list-group-item">{{ topic|join:"," }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    {% if analytics.top_entities %}
+                        <h4>Key Entities</h4>
+                        <ul class="list-group mb-4">
+                        {% for entity, count in analytics.top_entities.items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ entity }}
+                                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    {% if analytics.sentiment_counts %}
+                        <h4>Sentiment Distribution</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Positive</h5>
+                                        <h3>{{ analytics.sentiment_counts.positive|default:0 }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-secondary text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Neutral</h5>
+                                        <h3>{{ analytics.sentiment_counts.neutral|default:0 }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body text-center">
+                                        <h5>Negative</h5>
+                                        <h3>{{ analytics.sentiment_counts.negative|default:0 }}</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Responses Section -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3>Responses</h3>
+                    <div>
+                        <a href="{% url 'core:import_responses' survey.id %}" class="btn btn-primary btn-sm">
+                            Import Responses
+                        </a>
+                        <a href="{% url 'core:export_responses' survey.id %}" class="btn btn-success btn-sm">
+                            Export Responses
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if responses %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Question</th>
+                                        <th>Response</th>
+                                        <th>Sentiment</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for response in responses %}
+                                    <tr>
+                                        <td>{{ response.question.text }}</td>
+                                        <td>{{ response.text }}</td>
+                                        <td>
+                                            <span class="badge {% if response.sentiment_label == 'positive' %}bg-success
+                                                              {% elif response.sentiment_label == 'negative' %}bg-danger
+                                                              {% else %}bg-secondary{% endif %}">
+                                                {{ response.sentiment_label|title }}
+                                            </span>
+                                        </td>
+                                        <td>{{ response.created_at|date:"M d, Y H:i" }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No responses yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3>Actions</h3>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'core:question_create' survey.id %}" class="btn btn-primary btn-block mb-2">
+                        Add Question
+                    </a>
+                    <a href="{% url 'core:swot_analysis' survey.id %}" class="btn btn-info btn-block mb-2">
+                        View SWOT Analysis
+                    </a>
+                    <a href="{% url 'core:download_template' survey.id %}" class="btn btn-success btn-block">
+                        Download Template
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

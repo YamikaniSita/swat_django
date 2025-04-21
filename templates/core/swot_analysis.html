@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}SWOT Analysis - {{ survey.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">SWOT Analysis</h5>
+                    <div>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <div class="btn-group">
+                                <button type="submit" name="format" value="excel" class="btn btn-success btn-sm">
+                                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                                </button>
+                                <button type="submit" name="format" value="csv" class="btn btn-info btn-sm">
+                                    <i class="bi bi-file-earmark-text"></i> Export CSV
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h6>Survey: {{ survey.title }}</h6>
+                    <p class="text-muted">Project: {{ survey.project.name }}</p>
+                    
+                    <!-- Statistics Overview -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Response Statistics</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li>Total Responses: {{ statistics.total_responses }}</li>
+                                        <li>Questions: {{ statistics.questions_count }}</li>
+                                        <li>Response Rate: {{ statistics.response_rate }}%</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Sentiment Analysis</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li>Average Sentiment: {{ statistics.avg_sentiment }}</li>
+                                        <li>Positive: {{ statistics.sentiment_counts.positive }}</li>
+                                        <li>Neutral: {{ statistics.sentiment_counts.neutral }}</li>
+                                        <li>Negative: {{ statistics.sentiment_counts.negative }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Distribution -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">Response Distribution by Category</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                {% for category, count in statistics.category_counts.items %}
+                                <div class="col-md-3">
+                                    <div class="card">
+                                        <div class="card-body text-center">
+                                            <h3 class="mb-0">{{ count }}</h3>
+                                            <p class="text-muted mb-0">{{ category|title }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- SWOT Analysis -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="card-title mb-0">Strengths</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        {% for item in swot_summary.strengths %}
+                                        <li class="list-group-item">
+                                            <strong>Q:</strong> {{ item.question }}<br>
+                                            <strong>A:</strong> {{ item.response }}
+                                            {% if item.sentiment %}
+                                            <span class="badge bg-{{ item.sentiment }} float-end">
+                                                {{ item.sentiment|title }}
+                                            </span>
+                                            {% endif %}
+                                        </li>
+                                        {% empty %}
+                                        <li class="list-group-item text-muted">No strengths identified</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header bg-danger text-white">
+                                    <h6 class="card-title mb-0">Weaknesses</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        {% for item in swot_summary.weaknesses %}
+                                        <li class="list-group-item">
+                                            <strong>Q:</strong> {{ item.question }}<br>
+                                            <strong>A:</strong> {{ item.response }}
+                                            {% if item.sentiment %}
+                                            <span class="badge bg-{{ item.sentiment }} float-end">
+                                                {{ item.sentiment|title }}
+                                            </span>
+                                            {% endif %}
+                                        </li>
+                                        {% empty %}
+                                        <li class="list-group-item text-muted">No weaknesses identified</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="card-title mb-0">Opportunities</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        {% for item in swot_summary.opportunities %}
+                                        <li class="list-group-item">
+                                            <strong>Q:</strong> {{ item.question }}<br>
+                                            <strong>A:</strong> {{ item.response }}
+                                            {% if item.sentiment %}
+                                            <span class="badge bg-{{ item.sentiment }} float-end">
+                                                {{ item.sentiment|title }}
+                                            </span>
+                                            {% endif %}
+                                        </li>
+                                        {% empty %}
+                                        <li class="list-group-item text-muted">No opportunities identified</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-3">
+                                <div class="card-header bg-warning text-dark">
+                                    <h6 class="card-title mb-0">Threats</h6>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group">
+                                        {% for item in swot_summary.threats %}
+                                        <li class="list-group-item">
+                                            <strong>Q:</strong> {{ item.question }}<br>
+                                            <strong>A:</strong> {{ item.response }}
+                                            {% if item.sentiment %}
+                                            <span class="badge bg-{{ item.sentiment }} float-end">
+                                                {{ item.sentiment|title }}
+                                            </span>
+                                            {% endif %}
+                                        </li>
+                                        {% empty %}
+                                        <li class="list-group-item text-muted">No threats identified</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{% url 'core:import_responses' survey.id %}" class="btn btn-success">
+                            <i class="bi bi-upload"></i> Import More Responses
+                        </a>
+                        <a href="{% url 'surveys:survey_detail' survey.id %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Survey
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

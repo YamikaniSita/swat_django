@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if question %}Edit Question{% else %}Create Question{% endif %} - {{ survey.title }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        {% if question %}Edit Question{% else %}Create New Question{% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6>Survey: {{ survey.title }}</h6>
+                    <p class="text-muted">Project: {{ survey.project.name }}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Save Question
+                            </button>
+                            <a href="{% url 'surveys:survey_detail' survey.id %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Survey
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

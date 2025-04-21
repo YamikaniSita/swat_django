@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ survey.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Survey Information -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Survey Details</h5>
+                    <span class="badge {% if survey.status == 'active' %}bg-success{% elif survey.status == 'draft' %}bg-warning{% else %}bg-secondary{% endif %}">
+                        {{ survey.status|title }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h3 class="card-title">{{ survey.title }}</h3>
+                    <p class="text-muted">Project: {{ survey.project.name }}</p>
+                    <p class="card-text">{{ survey.description }}</p>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong>Start Date:</strong> {{ survey.start_date|date:"F j, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>End Date:</strong> {{ survey.end_date|date:"F j, Y" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <p><strong>Created by:</strong> {{ survey.created_by.get_full_name|default:survey.created_by.username }}</p>
+                        <p><strong>Created on:</strong> {{ survey.created_at|date:"F j, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Questions</h5>
+                    <a href="{% url 'surveys:question_create' survey.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Question
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if survey.questions.exists %}
+                        <div class="list-group">
+                            {% for question in survey.questions.all %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">{{ question.text }}</h6>
+                                            <small class="text-muted">
+                                                Type: {{ question.question_type|title }} | 
+                                                SWOT Category: {{ question.swot_category|title }}
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'surveys:question_edit' survey.pk question.pk %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'surveys:question_delete' survey.pk question.pk %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No questions added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            {% if analytics %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Survey Analytics</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Word Map -->
+                    {% if analytics.word_map %}
+                    <div class="mb-4">
+                        <h6>Word Map</h6>
+                        <img src="data:image/png;base64,{{ analytics.word_map }}" alt="Word Map" class="img-fluid">
+                    </div>
+                    {% endif %}
+
+                    <!-- Main Topics -->
+                    {% if analytics.topics %}
+                    <div class="mb-4">
+                        <h6>Main Topics</h6>
+                        <ul class="list-group">
+                            {% for topic in analytics.topics %}
+                            <li class="list-group-item">
+                                {{ topic }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Key Entities -->
+                    {% if analytics.top_entities %}
+                    <div class="mb-4">
+                        <h6>Key Entities</h6>
+                        <ul class="list-group">
+                            {% for entity, count in analytics.top_entities.items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ entity }}
+                                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <!-- Sentiment Distribution -->
+                    {% if analytics.sentiment_counts %}
+                    <div class="mb-4">
+                        <h6>Sentiment Distribution</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <h5 class="text-success">{{ analytics.sentiment_counts.positive }}</h5>
+                                <small class="text-muted">Positive</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="text-warning">{{ analytics.sentiment_counts.neutral }}</h5>
+                                <small class="text-muted">Neutral</small>
+                            </div>
+                            <div class="col-4">
+                                <h5 class="text-danger">{{ analytics.sentiment_counts.negative }}</h5>
+                                <small class="text-muted">Negative</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Social Media Responses Section -->
+            {% if social_responses %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Social Media Responses</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for response in social_responses %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="mb-1">{{ response.text }}</p>
+                                        {% if response.translated_from !=  None %}
+                                            <p class="mb-1">({{response.translated_from}})</p>
+                                        {% endif %}
+                                        <small class="text-muted">
+                                            Source: {{ response.source_type|title }} | 
+                                            Sentiment: {{ response.sentiment_label|title }} |
+                                            Score: {{ response.sentiment_score|floatformat:2 }}
+                                        </small>
+                                        {% if response.topics %}
+                                        <div class="mt-2">
+                                            <small class="text-muted">Topics: {{ response.topics|join:", " }}</small>
+                                        </div>
+                                        {% endif %}
+                                        {% if response.entities %}
+                                        <div>
+                                            <small class="text-muted">Entities: {{ response.entities|join:", " }}</small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'surveys:question_create' survey.pk %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Question
+                        </a>
+                        <a href="{% url 'core:swot_analysis' survey.pk %}" class="btn btn-info">
+                            <i class="fas fa-chart-bar"></i> View Responses
+                        </a>
+                        <a href="{% url 'core:import_responses' survey.pk %}" class="btn btn-success">
+                            <i class="fas fa-file-import"></i> Import Responses
+                        </a>
+                        <a href="{% url 'core:export_responses' survey.pk %}" class="btn btn-primary">
+                            <i class="fas fa-file-export"></i> Export Responses
+                        </a>
+                        <a href="{% url 'surveys:survey_edit' survey.pk %}" class="btn btn-primary">
+                            <i class="bi bi-pencil"></i> Edit Survey
+                        </a>
+                        <a href="{% url 'surveys:social_media_list' survey.pk %}" class="btn btn-info">
+                            <i class="fas fa-trash"></i> Setup social media
+                        </a>
+                        <form method="post" action="{% url 'surveys:start_survey' survey.pk %}" class="d-grid">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-play-circle"></i> Start Survey
+                            </button>
+                        </form>
+                        <a href="{% url 'surveys:survey_delete' survey.pk %}" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete Survey
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Survey Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <h3>{{ survey.questions.count }}</h3>
+                            <small class="text-muted">Questions</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h3>{{ survey.responses.count }}</h3>
+                            <small class="text-muted">Responses</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Collection Status -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Social Media Collection Status</h5>
+                </div>
+                <div class="card-body">
+                    {% for source in survey.social_sources.all %}
+                        <div class="mb-3">
+                            <h6>{{ source.source_name }} ({{ source.get_platform_display }})</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Last Fetched:</small><br>
+                                    {% if source.last_fetched %}
+                                        {{ source.last_fetched|date:"F j, Y H:i" }}
+                                    {% else %}
+                                        Never
+                                    {% endif %}
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Status:</small><br>
+                                    {% if source.last_error %}
+                                        <span class="text-danger">
+                                            <i class="bi bi-exclamation-triangle"></i> Error
+                                        </span>
+                                    {% else %}
+                                        <span class="text-success">
+                                            <i class="bi bi-check-circle"></i> OK
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if source.last_error %}
+                                <div class="alert alert-danger mt-2">
+                                    <small>{{ source.last_error }}</small>
+                                </div>
+                            {% endif %}
+                            <div class="row mt-2">
+                                <div class="col-4">
+                                    <small class="text-muted">Posts:</small><br>
+                                    {{ source.total_posts }}
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Comments:</small><br>
+                                    {{ source.total_comments }}
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted">Reactions:</small><br>
+                                    {{ source.total_reactions }}
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <a href="{% url 'surveys:source_edit' source.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i> Edit Source
+                                </a>
+                            </div>
+                        </div>
+                        {% if not forloop.last %}<hr>{% endif %}
+                    {% empty %}
+                        <p class="text-muted">No social media sources configured yet.</p>
+                        <a href="{% url 'surveys:social_media_list' survey.pk %}" class="btn btn-primary">
+                            <i class="bi bi-plus"></i> Add Social Media Source
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Social Media Sources Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Social Media Sources</h5>
+                    <a href="{% url 'surveys:social_media_create' survey.pk %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus"></i> Add Source
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if survey.social_sources.all %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Platform</th>
+                                        <th>Source</th>
+                                        <th>Topics</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for source in survey.social_sources.all %}
+                                        <tr>
+                                            <td>{{ source.get_platform_display }}</td>
+                                            <td>{{ source.source_name }}</td>
+                                            <td>{{ source.topics }}</td>
+                                            <td>
+                                                <span class="badge {% if source.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ source.is_active|yesno:"Active,Inactive" }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{% url 'surveys:source_edit' source.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                    <a href="{% url 'surveys:social_media_delete' source.pk %}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i> Delete
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No social media sources configured yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

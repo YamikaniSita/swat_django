@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Import Responses - {{ survey.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Import Volunteers</h5>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="alert alert-info">
+                        <h6>Instructions:</h6>
+                        <ol class="mb-0">
+                            <!-- <li>Click the "Download Template" button below to get an Excel file with all survey questions</li>
+                            <li>Fill in your responses in the "Response" column</li>
+                            <li>Optionally add notes in the "Notes" column</li>
+                            <li>Save the Excel file</li> -->
+                            <li>Upload the completed file using the form below</li>
+                        </ol>
+                    </div>
+                    
+                  
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="excel_file" class="form-label">Upload Excel File</label>
+                            <input type="file" class="form-control" id="excel_file" name="excel_file" accept=".xlsx,.xls" required>
+                            <div class="form-text">Please upload an Excel file (.xlsx or .xls) with your responses.</div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-upload"></i> Import Volunteers
+                            </button>
+                            
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
