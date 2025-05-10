@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 
+
 class Project(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
@@ -81,6 +82,11 @@ class Question(models.Model):
     swot_category = models.ForeignKey(SWOTCategory, on_delete=models.CASCADE)
     order = models.IntegerField(default=0)
     is_required = models.BooleanField(default=True)
+    required_data = models.CharField(max_length=20, choices=[
+        ('all', 'All'),
+        ('sentiment', 'Sentiment'),
+        ('topics', 'Entities and Topics'),
+    ], default='all')
 
     def __str__(self):
         return f"{self.text[:50]}..."
@@ -93,6 +99,7 @@ class Response(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     volunteer = models.ForeignKey('core.Volunteers', on_delete=models.CASCADE, null=True, blank=True)
     text = models.TextField()
+    translated_from = models.TextField(default="")
     sentiment_score = models.FloatField(null=True, blank=True)
     sentiment_label = models.CharField(max_length=20, choices=[
         ('positive', 'Positive'),
@@ -127,6 +134,8 @@ class SocialMediaResponse(models.Model):
     topics = models.JSONField(default=list)
     entities = models.JSONField(default=list)
     created_at = models.DateTimeField()
+    social_source = models.ForeignKey('surveys.SocialMediaSource', on_delete=models.CASCADE, null=True, blank=True)
+    
 
 
     def __str__(self):
@@ -139,6 +148,8 @@ class SocialMediaResponse(models.Model):
 class Volunteers(models.Model):
     name = models.TextField()
     phone_number = models.CharField(max_length=15, unique=True)
+    sex = models.CharField(max_length=2)
+    birthdate = models.DateTimeField(blank=True)
     region = models.TextField()
     location_id = models.ForeignKey(Location, null=False, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)

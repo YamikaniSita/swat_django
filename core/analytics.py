@@ -14,7 +14,8 @@ import numpy as np
 from textblob import TextBlob
 import re
 from spacy.matcher import PhraseMatcher
-
+from .models import Question, Response, SocialMediaResponse
+from surveys.models import SocialMediaSource
 
 # Download required NLTK data
 try:
@@ -187,7 +188,9 @@ def analyze_text(text):
         'sentiment_scores': sentiment_scores
     }
 
-def analyze_survey_responses(responses):
+
+
+def analyze_survey_responses(responses, word_map=False):
     """
     Analyze all responses for a survey and generate analytics.
     
@@ -199,47 +202,54 @@ def analyze_survey_responses(responses):
     """
     if not responses:
         return None
-        
-    # Collect all text for analysis
-    all_text = ' '.join(response.text for response in responses if response.text)
-    
-    # Generate word map
-    word_map = generate_word_map([response.text for response in responses if response.text])
-    
-    # Get overall sentiment distribution
+
     sentiment_counts = {'positive': 0, 'neutral': 0, 'negative': 0}
+    all_entities = []
+    text_for_topics = []
+    text_for_word_map = []
+
     for response in responses:
-        if response.text:
+        if not response.text:
+            continue
+        try:
+            data_required = getattr(response.question, 'required_data')
+            print(data_required)
+        except:
+            data_required = getattr(response.social_source, 'required_data')
+        print(data_required)
+
+        if data_required in ['both', 'sentiment']:
             analysis = analyze_text(response.text)
             sentiment_counts[analysis['sentiment']] += 1
-    
-    # Get top entities
-    all_entities = []
-    for response in responses:
-        if response.text:
+        
+        if data_required in ['both', 'topics']:
             analysis = analyze_text(response.text)
             all_entities.extend(analysis['entities'])
+            text_for_topics.append(response.text)
+            text_for_word_map.append(response.text)
+        
+
+    # Generate word map
+    if word_map:
+        word_map = generate_word_map(text_for_word_map)
+
+    # Top NER entities
     top_entities = dict(Counter(all_entities).most_common(10))
-    
-    # Get main topics
-    all_topics = []
+
+    # Topic modeling
     stop_words = stopwords.words('english')
-    topics = extract_topics([response.text for response in responses if response.text], num_topics=5)
+    topics = extract_topics(text_for_topics, num_topics=5) if text_for_topics else []
     main_topics = extract_top_keywords(topics, top_n=10)
-    topics_ = []
-    topics_.append([word for word in main_topics if word not in stop_words])
-    print(topics_)
+    main_topics = [word for word in main_topics if word not in stop_words]
 
-
-    # main_topics = [list(group) for group in set(tuple(topic) for topic in all_topics)][:20]
-    
     return {
         'sentiment_counts': sentiment_counts,
         'top_entities': top_entities,
         'topics': main_topics,
         'total_responses': len(responses),
         'word_map': word_map
-    } 
+    }
+
 
 def extract_top_keywords(topics, top_n=10):
     """
@@ -248,3 +258,73 @@ def extract_top_keywords(topics, top_n=10):
     all_keywords = [word for topic in topics for word in topic]
     keyword_counts = Counter(all_keywords)
     return dict(keyword_counts.most_common(top_n))
+
+
+def generate_survey_report(survey):
+    """
+    Generate a comprehensive report for a given survey.
+    
+    Args:
+        survey (Survey): The survey object to analyze
+        
+    Returns:
+        dict: Dictionary containing the report
+    """
+    report_dict = {} 
+    question_responses = Question.objects.filter(survey=survey)
+    for question in question_responses:
+        responses = Response.objects.filter(question=question)
+        if responses.exists():
+            data_required = getattr(question, 'required_data', 'both')
+            sentiment_counts = {'positive': 0, 'neutral': 0, 'negative': 0}
+            all_entities = []
+            text_for_topics = []
+            for response in responses:
+                if data_required in ['both', 'sentiment']:
+                    analysis = analyze_text(response.text)
+                    sentiment_counts[analysis['sentiment']] += 1
+
+                if data_required in ['both', 'topics']:
+                    analysis = analyze_text(response.text)
+                    all_entities.extend(analysis['entities'])
+                    text_for_topics.append(response.text)
+            top_entities = dict(Counter(all_entities).most_common(10))
+            # Topic modeling
+            stop_words = stopwords.words('english')
+            topics = extract_topics(text_for_topics, num_topics=5) if text_for_topics else []
+            main_topics = extract_top_keywords(topics, top_n=10)
+            main_topics = [word for word in main_topics if word not in stop_words]
+            report_dict[question.text] = {'required_data': question.required_data, 'swot_category': question.swot_category.name, 'sentiment_counts': sentiment_counts, 'top_entities': top_entities, 'top_topics': main_topics}
+        else:
+            report_dict[question.text] = None
+    
+    # for social media responses
+    social_sources_report = {}
+    for social_sources in SocialMediaSource.objects.filter(survey=survey):
+        sentiment_counts = {'positive': 0, 'neutral': 0, 'negative': 0}
+        all_entities = []
+        text_for_topics = []
+        data_required = getattr(social_sources, 'required_data', 'both')
+        print(data_required)
+        for social_response in SocialMediaResponse.objects.filter(survey=survey, social_source=social_sources):
+            print(social_response.text)
+            if not social_response.text:
+                continue
+            if data_required in ['both', 'sentiment']:
+                analysis = analyze_text(social_response.text)
+                sentiment_counts[analysis['sentiment']] += 1
+
+            if data_required in ['both', 'topics']:
+                analysis = analyze_text(social_response.text)
+                all_entities.extend(analysis['entities'])
+                text_for_topics.append(social_response.text)
+        top_entities = dict(Counter(all_entities).most_common(10))
+        # Topic modeling
+        stop_words = stopwords.words('english')
+        topics = extract_topics(text_for_topics, num_topics=5) if text_for_topics else []
+        main_topics = extract_top_keywords(topics, top_n=10)
+        main_topics = [word for word in main_topics if word not in stop_words]
+        social_sources_report[social_sources.source_name] = {'platform': social_sources.platform,'required_data': social_sources.required_data, 'sentiment_counts': sentiment_counts, 'top_entities': top_entities, 'top_topics': main_topics}
+    print(social_sources_report)
+    return [report_dict, social_sources_report]
+

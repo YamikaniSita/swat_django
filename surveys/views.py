@@ -41,7 +41,7 @@ def survey_detail(request, pk):
     
     # Get analytics including word map
     analytics = analyze_survey_responses(list(responses) + list(social_responses))
-    
+    print(analytics)
     context = {
         'survey': survey,
         'responses': responses,

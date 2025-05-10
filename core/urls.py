@@ -13,6 +13,7 @@ urlpatterns = [
     path('surveys/<int:survey_id>/import/', views.import_responses, name='import_responses'),
     path('surveys/<int:survey_id>/export/', views.export_responses, name='export_responses'),
     path('surveys/<int:survey_id>/download-template/', views.download_template, name='download_template'),
-    path('surveys/<int:survey_id>/swot/', views.swot_analysis, name='swot_analysis'),
-    path('volunteers/', views.manage_volunteers, name = "manage_volunteers")
+    path('surveys/<int:survey_id>/report/', views.swot_analysis, name='swot_analysis'),
+    path('volunteers/', views.manage_volunteers, name = "manage_volunteers"),
+    path('surveys/<int:survey_id>/pdf_report/', views.report, name="report_pdf"),
 ] 

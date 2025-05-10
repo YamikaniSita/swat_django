@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .letterhead {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .content {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container my-4">
+        <!-- Letterhead -->
+        <div class="letterhead">
+            <h1>Survey Report For {{ survey.title }}</h1>
+            <h1>Project: {{ survey.project.name }}</h1>
+            <p>Author: SWOT System</p>
+            <p>For: {{  username }}</p>
+        </div>
+
+        <!-- Introduction -->
+        <div class="content">
+            <h2 class="section-title">Introduction</h2>
+            <p>
+                This report presents the findings of the survey titled <strong>{{ survey.title }}</strong>, conducted as part of the project <strong>{{ survey.project.name }}</strong>. 
+                The survey was designed to gather insights on <em>[placeholder: survey objective or focus]</em>, with the aim of understanding key aspects such as 
+                <em>[placeholder: key aspects being analyzed, e.g., sentiment, topics, entities]</em>.
+            </p>
+            <p>
+                The survey was conducted over a period starting from <strong>{{ survey.start_date }}</strong> and expected to end <strong>{{ survey.end_date }}</strong>, targeting the area of {{ survey.project.location.name }}</strong> 
+                . Hence all SMS surveys where sent to volunteers in the aforementioned area, please note that social media response source areas can not be restricted.
+            </p>
+            <p>
+                The analysis presented in this report leverages advanced techniques, including sentiment analysis, topic modeling, and entity extraction, to provide a 
+                comprehensive understanding of the responses. The findings are categorized into SWOT (Strengths, Weaknesses, Opportunities, and Threats) categories, 
+                offering actionable insights for <em>[placeholder: intended use or audience]</em>.
+            </p>
+            <p>
+                This report is intended for <strong>{{ username }}</strong> and other stakeholders involved in the project hence maybe privileged. The insights derived from this analysis aim to 
+                support decision-making and strategic planning for <em>{{ survey.description }}</em>.
+            </p>
+        </div>
+
+       <!-- Methodology -->
+        <div class="content">
+            <h2 class="section-title">Methodology</h2>
+            <p>
+                The methodology employed in this survey combines traditional data collection techniques with advanced natural language processing (NLP) algorithms to ensure a comprehensive analysis of the responses.
+            </p>
+            <p>
+                The survey was conducted using following primary data collection methods:
+            </p>
+            {% if questionnaire %}
+            <ul>
+                <li>
+                    <strong>SMS Questionnaires:</strong> A structured questionnaire was designed and administered via SMS to volunteers residing in the survey area, <strong>{{ survey.project.location.name }}</strong>. 
+                    The questionnaire consisted of {{ questionnaire.length }} questions, designed to gather insights on <em>[placeholder: survey focus]</em>. 
+                    Responses were collected and categorized into SWOT (Strengths, Weaknesses, Opportunities, and Threats) categories for further analysis.
+                </li>
+            </ul>
+            {% endif %}
+            {% if social_media_sources %}
+            <ul>
+                <li>
+                    <strong>Social Media Sources:</strong> In addition to SMS responses, data was collected from social media platforms. The following sources were included in the analysis:
+                    <ul>
+                        {% for source in social_media_sources %}
+                        <li><strong>{{ source.source_name }}</strong>: {{ source.platform }}</li>
+                        {% endfor %}
+                    </ul>
+                    These sources provided additional context and insights, complementing the SMS responses.
+                </li>
+            </ul>
+            {% endif %}
+            <p>
+                The data collection process was designed to ensure a diverse range of responses, capturing various perspectives and sentiments related to the survey focus.
+            <p>
+                The collected data was processed using advanced NLP techniques, including:
+            </p>
+            <ul>
+                <li>
+                    <strong>Sentiment Analysis:</strong> Each response was analyzed to determine its sentiment (positive, neutral, or negative), providing insights into the overall tone of the feedback.
+                </li>
+                <li>
+                    <strong>Topic Modeling:</strong> Responses were analyzed to identify recurring topics and themes, helping to uncover key areas of interest or concern.
+                </li>
+                <li>
+                    <strong>Entity Extraction:</strong> Named entities (e.g., people, organizations, locations) were identified within the responses to highlight specific subjects of discussion.
+                </li>
+            </ul>
+            <p>
+                These techniques were applied to both SMS and social media responses, ensuring a robust and comprehensive analysis of the data. The findings from this methodology form the basis of the insights presented in this report.
+            </p>
+        </div>
+
+            <!-- Results -->
+        <div class="content">
+            <h2 class="section-title">Results</h2>
+            <h3>Survey Participation</h3>
+            <p>
+                The survey targeted a total of <strong>{{ survey.target_respondents }}</strong> respondents through SMS questionnaires. Out of these, 
+                <strong>{{ statistics.total_responses }}</strong> responses were received, resulting in a response rate of <strong>{{ statistics.response_rate }}%</strong>. 
+                This demonstrates <em>[placeholder: analysis of response rate, e.g., "a strong engagement from the target audience"]</em>.
+            </p>
+
+            <h3>Social Media Data</h3>
+            <p>
+                In addition to SMS responses, data was collected from social media platforms. A total of <strong>{{ statistics.indexed_social_responses }}</strong> posts and comments 
+                were indexed and processed from <strong>{{ statistics.setup_social_sources }}</strong> social media sources. These sources provided valuable insights, complementing the SMS responses 
+                and offering a broader perspective on the survey focus.
+            </p>
+
+            <h3>General Sentiment</h3>
+            <p>
+               The overall sentiment of the responses was analyzed, revealing an Average Sentiment Score of <strong>{{ statistics.avg_sentiment }}</strong>.
+               This score indicates the general sentiment expressed in the responses, with a range from -1 (very negative) to +1 (very positive).
+               The sentiment distribution is as follows:
+            </p>
+            <ul>
+                <li><strong>Positive:</strong> {{ statistics.sentiment_counts.positive }} responses</li>
+                <li><strong>Neutral:</strong> {{ statistics.sentiment_counts.neutral }} responses</li>
+                <li><strong>Negative:</strong> {{ statistics.sentiment_counts.negative }} responses</li>
+            </ul>
+            <p>
+                This sentiment distribution highlights <em>[placeholder: analysis of sentiment trends, e.g., "a generally positive outlook among respondents"]</em>.
+            </p>
+
+            <h3>Topics and Entities</h3>
+            <p>
+                The topic modeling and entity extraction processes identified key themes and subjects of discussion across the responses. These findings are detailed in the subsequent sections of this report.
+            </p>
+            <p>
+                The topic modeling analysis identified recurring themes and subjects of discussion across the responses. These topics provide valuable insights into the areas of interest, concern, and focus among the respondents.
+            </p>
+            <h3>Key Topics Identified</h3>
+            <ul>
+                {% for topic in topics %}
+                <li>
+                    <strong>{{ topic }}</strong>: {{ topic.description }}
+                </li>
+                {% endfor %}
+            </ul>
+            <p>
+                These topics were derived from both SMS responses and social media data, ensuring a comprehensive understanding of the key themes. The analysis highlights <em>[placeholder: analysis of topics, e.g., "a strong emphasis on community development and infrastructure"]</em>.
+            </p>
+            <h3>Top Entities Identified</h3>
+            <p>
+                The following entities were most frequently mentioned in the responses:
+            </p>
+            <ul>
+                {% for entity, count in entities.items %}
+                <li><strong>{{ entity }}</strong>: Mentioned {{ count }} times</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <!-- Granular Report -->
+        <div class="content">
+            <h2 class="section-title">Granular Report</h2>
+            <p>
+                This section provides a detailed breakdown of the survey responses, categorized by individual questions and social media sources. Each entry highlights the SWOT category, sentiment distribution, top entities, and key topics associated with the responses.
+            </p>
+
+            <!-- Per Question Report -->
+            <h3>Per Question Analysis</h3>
+            {% for question, details in full_report.0.items %}
+            <div class="mb-4">
+                <h4>{{ question }}</h4>
+                <p><strong>SWOT Category:</strong> {{ details.swot_category|title }}</p>
+                <p><strong>Required Data:</strong> {{ details.required_data|title }}</p>
+                <p><strong>Sentiment Distribution:</strong></p>
+                <ul>
+                    <li><strong>Positive:</strong> {{ details.sentiment_counts.positive }}</li>
+                    <li><strong>Neutral:</strong> {{ details.sentiment_counts.neutral }}</li>
+                    <li><strong>Negative:</strong> {{ details.sentiment_counts.negative }}</li>
+                </ul>
+                {% if details.top_entities %}
+                <p><strong>Top Entities:</strong></p>
+                <ul>
+                    {% for entity, count in details.top_entities.items %}
+                    <li>{{ entity }}: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% if details.top_topics %}
+                <p><strong>Top Topics:</strong></p>
+                <ul>
+                    {% for topic in details.top_topics %}
+                    <li>{{ topic }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <!-- Per Social Media Source Report -->
+            <h3>Per Social Media Source Analysis</h3>
+            {% for source, details in full_report.1.items %}
+            <div class="mb-4">
+                <h4>{{ source }}</h4>
+                <p><strong>Platform:</strong> {{ details.platform }}</p>
+                <p><strong>SWOT Category:</strong> {{ details.swot_category|title }}</p>
+                <p><strong>Required Data:</strong> {{ details.required_data|title }}</p>
+                <p><strong>Sentiment Distribution:</strong></p>
+                <ul>
+                    <li><strong>Positive:</strong> {{ details.sentiment_counts.positive }}</li>
+                    <li><strong>Neutral:</strong> {{ details.sentiment_counts.neutral }}</li>
+                    <li><strong>Negative:</strong> {{ details.sentiment_counts.negative }}</li>
+                </ul>
+                {% if details.top_entities %}
+                <p><strong>Top Entities:</strong></p>
+                <ul>
+                    {% for entity, count in details.top_entities.items %}
+                    <li>{{ entity }}: {{ count }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% if details.top_topics %}
+                <p><strong>Top Topics:</strong></p>
+                <ul>
+                    {% for topic in details.top_topics %}
+                    <li>{{ topic }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Recommendations -->
+        <div class="content">
+            <h2 class="section-title">Recommendations</h2>
+            <p>{{ recommendation }} </p>
+            <strong>Powered by Meta's llama-4-scout model</strong>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

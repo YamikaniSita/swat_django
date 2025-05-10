@@ -293,7 +293,8 @@ class FacebookService:
                 topics=analysis.get('topics', []),
                 entities=analysis.get('entities', []),
                 translated_from = translated_from,
-                created_at=post_date
+                created_at=post_date,
+                social_source=source
             )
             logger.info(f"Created response with ID: {response.id}")
 
@@ -684,7 +685,9 @@ def send_questions(respondents, questions):
             }
             print(f"Sending batch: {dict} messages")
             try:
-                response = requests.post(url, data=payload)
+                response = None
+                # testing preventing this from being sent
+                # response = requests.post(url, data=payload)
                 print("Log this", response.json())
             except Exception as e:
                 logging.error(f"Failed to send SMS batch: {e}")

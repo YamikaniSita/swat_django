@@ -1,15 +1,23 @@
+from bs4 import BeautifulSoup
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Count
 from django.core.exceptions import ValidationError
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
+from django.template.loader import render_to_string
 import os
-from .models import Project, Survey, SWOTCategory, Question, Response
+
+import pdfkit
+
+from core.analytics import generate_survey_report, analyze_survey_responses
+from surveys.models import SocialMediaSource
+from .models import Project, SocialMediaResponse, Survey, SWOTCategory, Question, Response
 from .forms import ProjectForm, QuestionForm
-from .utils import import_responses_from_excel, get_swot_summary, generate_survey_template, get_survey_statistics, export_swot_analysis, import_volunteers_from_excel
+from .utils import build_recommendation_prompt, get_ai_recommendations, import_responses_from_excel, get_swot_summary, generate_survey_template, get_survey_statistics, export_swot_analysis, import_volunteers_from_excel
 import pandas as pd
-from .nlp_tools import analyze_survey_responses
+from huggingface_hub import InferenceClient, list_inference_endpoints
+# from .nlp_tools import analyze_survey_responses
 import logging
 
 # Set up logging with more detailed configuration
@@ -123,6 +131,7 @@ def import_responses(request, survey_id):
             context = {
                 'survey': survey,
                 'success_count': success_count,
+                
                 'error_count': error_count,
                 'errors': errors,
                 'swot_summary': swot_summary
@@ -139,24 +148,37 @@ def import_responses(request, survey_id):
 @login_required
 def swot_analysis(request, survey_id):
     """Display SWOT analysis for a survey."""
+    import pdfkit
     survey = get_object_or_404(Survey, id=survey_id, project__created_by=request.user)
-    swot_summary = get_swot_summary(survey_id)
     statistics = get_survey_statistics(survey_id)
     
     if request.method == 'POST':
         output_format = request.POST.get('format', 'excel')
         try:
-            output_file = export_swot_analysis(survey_id, output_format)
+            print("attempting to export")
+            output_file = f'static/swot_report_{survey.title.replace(" ", "")}output.pdf'
+            pdfkit.from_url(f'http://localhost:8000/survey/{survey_id}/pdf_report/', output_file)
+            print("exported")
+            # Generate the SWOT analysis report
             response = FileResponse(open(output_file, 'rb'))
-            response['Content-Disposition'] = f'attachment; filename="swot_analysis_{survey_id}.{output_format}"'
+            response['Content-Disposition'] = f'attachment; filename="{survey.title.replace(" ", "")}_report.pdf"'
             return response
         except Exception as e:
             messages.error(request, f'Error exporting analysis: {str(e)}')
+    report = generate_survey_report(survey)
     
+    questionnaire_response = responses = Response.objects.filter(survey=survey).select_related('question')
+    social_responses = SocialMediaResponse.objects.filter(survey=survey)
+    
+    # Get analytics including word map
+    snippet = analyze_survey_responses(list(responses) + list(social_responses), word_map=False)
+    print(snippet)
     context = {
         'survey': survey,
-        'swot_summary': swot_summary,
-        'statistics': statistics
+        'swot_summary': [],
+        'statistics': statistics,
+        'report': report[0],
+        'social_media_analysis': report[1],
     }
     return render(request, 'core/swot_analysis.html', context)
 
@@ -246,23 +268,6 @@ def export_responses(request, survey_id):
     response['Content-Disposition'] = f'attachment; filename="{output_file}"'
     return response
 
-@login_required
-def survey_detail(request, survey_id=None, pk=None):
-    """Show detailed view of a survey."""
-    # Handle both pk and survey_id parameters
-    survey_id = survey_id or pk
-    survey = get_object_or_404(Survey, id=survey_id, project__created_by=request.user)
-    responses = Response.objects.filter(survey=survey).select_related('question')
-    logging.info(f"Hello {responses}")
-    # Get analytics including word map
-    analytics = analyze_survey_responses(responses)
-    
-    context = {
-        'survey': survey,
-        'responses': responses,
-        'analytics': analytics,
-    }
-    return render(request, 'core/survey_detail.html', context) 
 
 @login_required
 def manage_volunteers(request):
@@ -292,3 +297,37 @@ def manage_volunteers(request):
             messages.error(request, f'Error importing responses: {str(e)}')
     
     return render(request, 'core/import_volunteers.html')
+
+@login_required
+def report(request, survey_id):
+    """Generate and display a pdf report for a survey."""
+    # token = 
+    survey = get_object_or_404(Survey, id=survey_id, project__created_by=request.user)
+    questionnaire = Question.objects.filter(survey=survey).values()
+    social_sources = SocialMediaSource.objects.filter(survey=survey).values()
+    responses = Response.objects.filter(survey=survey).select_related('question')
+    social_responses = SocialMediaResponse.objects.filter(survey=survey)
+    analytics = analyze_survey_responses(list(responses) + list(social_responses))
+    statistics = get_survey_statistics(survey_id)
+    full_report = generate_survey_report(survey)
+    # print(full_report)
+    context = {
+        'survey': survey,
+        'username': survey.project.created_by.username,
+        'questionnaire': list(questionnaire),
+        'social_media_sources': list(social_sources),
+        'statistics': statistics,
+        'topics': analytics['topics'],
+        'entities': analytics['top_entities'],
+        'full_report': full_report,
+        'recommendation': get_ai_recommendations(full_report)
+    }
+   
+    html = render_to_string('core/report.html', context)
+    pdf_output = pdfkit.from_string(html, False)  # False returns it as bytes
+
+
+    # Serve PDF as download
+    response = HttpResponse(pdf_output, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{survey.title.replace(" ", "")}_report.pdf"'
+    return response

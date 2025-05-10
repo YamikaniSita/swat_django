@@ -14,7 +14,7 @@ class ProjectForm(forms.ModelForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['text', 'swot_category', 'order', 'is_required']
+        fields = '__all__'
         widgets = {
             'text': forms.Textarea(attrs={'rows': 3}),
             'order': forms.NumberInput(attrs={'min': 1}),
@@ -24,4 +24,5 @@ class QuestionForm(forms.ModelForm):
             'swot_category': 'Select the SWOT category this question belongs to.',
             'order': 'Specify the order in which this question should appear in the survey.',
             'is_required': 'Check if this question must be answered.',
+            'required_data': 'From the question, what elements do you need to'
         } 

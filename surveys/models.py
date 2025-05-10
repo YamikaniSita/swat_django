@@ -35,6 +35,11 @@ class SocialMediaSource(models.Model):
         ('profile', 'Profile'),
         ('hashtag', 'Hashtag')
     ])
+    required_data = models.CharField(max_length=20, choices=[
+        ('all', 'All'),
+        ('sentiment', 'Sentiment'),
+        ('topics', 'Entities and Topics'),
+    ], default='all')
     source_id = models.CharField(max_length=200, help_text="Page ID, Group ID, Profile username, or hashtag")
     source_name = models.CharField(max_length=255, help_text="Display name of the source")
     topics = models.TextField(help_text="Comma-separated list of topics to monitor")

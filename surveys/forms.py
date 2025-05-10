@@ -93,7 +93,7 @@ class SurveyForm(forms.ModelForm):
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['text', 'swot_category', 'order', 'is_required']
+        fields = ['text', 'swot_category', 'order', 'is_required', 'required_data']
         widgets = {
             'text': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
             'swot_category': forms.Select(attrs={'class': 'form-select'}),

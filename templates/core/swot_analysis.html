@@ -1,192 +1,322 @@
 {% extends "base.html" %}
-
 {% block title %}SWOT Analysis - {{ survey.title }}{% endblock %}
-
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card mb-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">SWOT Analysis</h5>
-                    <div>
-                        <form method="post" class="d-inline">
-                            {% csrf_token %}
-                            <div class="btn-group">
-                                <button type="submit" name="format" value="excel" class="btn btn-success btn-sm">
-                                    <i class="bi bi-file-earmark-excel"></i> Export Excel
-                                </button>
-                                <button type="submit" name="format" value="csv" class="btn btn-info btn-sm">
-                                    <i class="bi bi-file-earmark-text"></i> Export CSV
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <h6>Survey: {{ survey.title }}</h6>
-                    <p class="text-muted">Project: {{ survey.project.name }}</p>
-                    
-                    <!-- Statistics Overview -->
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title">Response Statistics</h6>
-                                    <ul class="list-unstyled mb-0">
-                                        <li>Total Responses: {{ statistics.total_responses }}</li>
-                                        <li>Questions: {{ statistics.questions_count }}</li>
-                                        <li>Response Rate: {{ statistics.response_rate }}%</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-body">
-                                    <h6 class="card-title">Sentiment Analysis</h6>
-                                    <ul class="list-unstyled mb-0">
-                                        <li>Average Sentiment: {{ statistics.avg_sentiment }}</li>
-                                        <li>Positive: {{ statistics.sentiment_counts.positive }}</li>
-                                        <li>Neutral: {{ statistics.sentiment_counts.neutral }}</li>
-                                        <li>Negative: {{ statistics.sentiment_counts.negative }}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Category Distribution -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h6 class="card-title mb-0">Response Distribution by Category</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                {% for category, count in statistics.category_counts.items %}
-                                <div class="col-md-3">
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <h3 class="mb-0">{{ count }}</h3>
-                                            <p class="text-muted mb-0">{{ category|title }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- SWOT Analysis -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card mb-3">
-                                <div class="card-header bg-success text-white">
-                                    <h6 class="card-title mb-0">Strengths</h6>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group">
-                                        {% for item in swot_summary.strengths %}
-                                        <li class="list-group-item">
-                                            <strong>Q:</strong> {{ item.question }}<br>
-                                            <strong>A:</strong> {{ item.response }}
-                                            {% if item.sentiment %}
-                                            <span class="badge bg-{{ item.sentiment }} float-end">
-                                                {{ item.sentiment|title }}
-                                            </span>
-                                            {% endif %}
-                                        </li>
-                                        {% empty %}
-                                        <li class="list-group-item text-muted">No strengths identified</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                            
-                            <div class="card mb-3">
-                                <div class="card-header bg-danger text-white">
-                                    <h6 class="card-title mb-0">Weaknesses</h6>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group">
-                                        {% for item in swot_summary.weaknesses %}
-                                        <li class="list-group-item">
-                                            <strong>Q:</strong> {{ item.question }}<br>
-                                            <strong>A:</strong> {{ item.response }}
-                                            {% if item.sentiment %}
-                                            <span class="badge bg-{{ item.sentiment }} float-end">
-                                                {{ item.sentiment|title }}
-                                            </span>
-                                            {% endif %}
-                                        </li>
-                                        {% empty %}
-                                        <li class="list-group-item text-muted">No weaknesses identified</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <div class="card mb-3">
-                                <div class="card-header bg-primary text-white">
-                                    <h6 class="card-title mb-0">Opportunities</h6>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group">
-                                        {% for item in swot_summary.opportunities %}
-                                        <li class="list-group-item">
-                                            <strong>Q:</strong> {{ item.question }}<br>
-                                            <strong>A:</strong> {{ item.response }}
-                                            {% if item.sentiment %}
-                                            <span class="badge bg-{{ item.sentiment }} float-end">
-                                                {{ item.sentiment|title }}
-                                            </span>
-                                            {% endif %}
-                                        </li>
-                                        {% empty %}
-                                        <li class="list-group-item text-muted">No opportunities identified</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                            
-                            <div class="card mb-3">
-                                <div class="card-header bg-warning text-dark">
-                                    <h6 class="card-title mb-0">Threats</h6>
-                                </div>
-                                <div class="card-body">
-                                    <ul class="list-group">
-                                        {% for item in swot_summary.threats %}
-                                        <li class="list-group-item">
-                                            <strong>Q:</strong> {{ item.question }}<br>
-                                            <strong>A:</strong> {{ item.response }}
-                                            {% if item.sentiment %}
-                                            <span class="badge bg-{{ item.sentiment }} float-end">
-                                                {{ item.sentiment|title }}
-                                            </span>
-                                            {% endif %}
-                                        </li>
-                                        {% empty %}
-                                        <li class="list-group-item text-muted">No threats identified</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 mt-4">
-                        <a href="{% url 'core:import_responses' survey.id %}" class="btn btn-success">
-                            <i class="bi bi-upload"></i> Import More Responses
-                        </a>
-                        <a href="{% url 'surveys:survey_detail' survey.id %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Survey
-                        </a>
-                    </div>
-                </div>
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-10 offset-lg-1">
+      <div class="card shadow-sm border-0 rounded-3 mb-5">
+        <!-- Card Header with improved styling -->
+        <div class="card-header bg-white border-bottom p-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h4 class="fw-bold mb-0">Survey Analysis</h4>
+              <p class="text-muted mb-0 mt-1">{{ survey.title }} | {{ survey.project.name }}</p>
             </div>
+            
+            <button type="submit" name="format" value="excel" class="btn btn-success">
+              <i class="bi bi-file-earmark-excel me-2"></i> <a href="../../{{ survey.id }}/pdf_report/">Export PDF</a>
+            </button>
+            
+          </div>
         </div>
+
+        <!-- SWOT Categories Header -->
+        <div class="d-flex align-items-center mb-4">
+          <h5 class="fw-bold mb-0">Questionnaire Analysis Results</h5>
+          <div class="ms-auto">
+            <span class="badge bg-success me-1">Strengths</span>
+            <span class="badge bg-danger me-1">Weaknesses</span>
+            <span class="badge bg-primary me-1">Opportunities</span>
+            <span class="badge bg-warning text-dark">Threats</span>
+          </div>
+        </div>
+
+        <div class="card-body p-4">
+          <!-- Statistics Overview with improved cards -->
+          <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <div class="card h-100 border-0 shadow-sm bg-light rounded-3">
+                <div class="card-body p-3">
+                  <h5 class="fw-bold mb-3 text-primary">
+                    <i class="bi bi-bar-chart-line me-2"></i>Response Statistics
+                  </h5>
+                  <div class="row">
+                    <div class="col-4 text-center border-end">
+                      <h3 class="fw-bold text-dark mb-0">{{ statistics.total_responses }}</h3>
+                      <p class="text-muted small mb-0">Total Responses</p>
+                    </div>
+                    <div class="col-4 text-center border-end">
+                      <h3 class="fw-bold text-dark mb-0">{{ statistics.questions_count }}</h3>
+                      <p class="text-muted small mb-0">Questions</p>
+                    </div>
+                    <div class="col-4 text-center">
+                      <h3 class="fw-bold text-dark mb-0">{{ statistics.response_rate }}%</h3>
+                      <p class="text-muted small mb-0">Response Rate</p>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-4 text-center border-end">
+                      <h3 class="fw-bold text-dark mb-0">{{ statistics.setup_social_sources }}</h3>
+                      <p class="text-muted small mb-0">Social Media Sources</p>
+                    </div>
+                    <div class="col-4 text-center border-end">
+                      <h3 class="fw-bold text-dark mb-0">{{ statistics.indexed_social_responses }}</h3>
+                      <p class="text-muted small mb-0">Indexed Social Responses</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100 border-0 shadow-sm bg-light rounded-3">
+                <div class="card-body p-3">
+                  <h5 class="fw-bold mb-3 text-primary">
+                    <i class="bi bi-emoji-smile me-2"></i>Sentiment Analysis
+                  </h5>
+                  <div class="row">
+                    <div class="col-6 mb-3">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-success rounded-circle p-2 me-2">
+                          <i class="bi bi-hand-thumbs-up text-white"></i>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">Positive</h6>
+                          <h5 class="fw-bold mb-0">{{ statistics.sentiment_counts.positive }}</h5>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-warning rounded-circle p-2 me-2">
+                          <i class="bi bi-dash-circle text-white"></i>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">Neutral</h6>
+                          <h5 class="fw-bold mb-0">{{ statistics.sentiment_counts.neutral }}</h5>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-danger rounded-circle p-2 me-2">
+                          <i class="bi bi-hand-thumbs-down text-white"></i>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">Negative</h6>
+                          <h5 class="fw-bold mb-0">{{ statistics.sentiment_counts.negative }}</h5>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded-circle p-2 me-2">
+                          <i class="bi bi-calculator text-white"></i>
+                        </div>
+                        <div>
+                          <h6 class="mb-0">Average</h6>
+                          <h5 class="fw-bold mb-0">{{ statistics.avg_sentiment }}</h5>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+
+          <!-- Report Overview with improved cards -->
+          <div class="row g-3">
+            {% for question, details in report.items %}
+            <div class="col-md-6">
+              <div class="card h-100 border-0 shadow-sm">
+                <div class="card-header p-3 bg-{{ details.swot_category }}{% if details.swot_category == 'weaknesses' or details.swot_category == 'threats' %} text-white{% else %} text-dark{% endif %}">
+                  <div class="d-flex align-items-center">
+                    {% if details.swot_category == 'strengths' %}
+                    <i class="bi bi-star-fill me-2"></i>
+                    {% elif details.swot_category == 'weaknesses' %}
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {% elif details.swot_category == 'opportunities' %}
+                    <i class="bi bi-lightbulb-fill me-2"></i>
+                    {% elif details.swot_category == 'threats' %}
+                    <i class="bi bi-shield-fill-exclamation me-2"></i>
+                    {% endif %}
+                    <h6 class="card-title fw-bold mb-0">{{ question }}</h6>
+                  </div>
+                </div>
+                <div class="card-body p-3">
+                  <span class="badge bg-light text-dark mb-3">{{ details.swot_category|title }}</span>
+                  
+                  {% if details.required_data == 'sentiment' or details.required_data == 'both' %}
+                  <div class="mb-3">
+                    <h6 class="fw-bold">Sentiment Analysis</h6>
+                    <!-- Simple fixed visualization instead of calculated percentages -->
+                    <div class="progress mb-2" style="height: 10px;">
+                      {% with total=details.sentiment_counts.positive|add:details.sentiment_counts.neutral|add:details.sentiment_counts.negative %}
+                      {% if total > 0 %}
+                      <!-- Using inline styles with fixed widths as a simpler approach -->
+                      <div class="progress-bar bg-success" role="progressbar" 
+                           style="width: {% widthratio details.sentiment_counts.positive total 100 %}%" 
+                           aria-valuenow="{{ details.sentiment_counts.positive }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
+                      <div class="progress-bar bg-warning" role="progressbar" 
+                           style="width: {% widthratio details.sentiment_counts.neutral total 100 %}%" 
+                           aria-valuenow="{{ details.sentiment_counts.neutral }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
+                      <div class="progress-bar bg-danger" role="progressbar" 
+                           style="width: {% widthratio details.sentiment_counts.negative total 100 %}%" 
+                           aria-valuenow="{{ details.sentiment_counts.negative }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
+                      {% endif %}
+                      {% endwith %}
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                      <div>Positive: {{ details.sentiment_counts.positive }}</div>
+                      <div>Neutral: {{ details.sentiment_counts.neutral }}</div>
+                      <div>Negative: {{ details.sentiment_counts.negative }}</div>
+                    </div>
+                  </div>
+                  {% endif %}
+                  
+                  {% if details.top_entities %}
+                  <div class="mb-3">
+                    <h6 class="fw-bold">Key Entities</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                      {% for entity, count in details.top_entities.items %}
+                      <span class="badge bg-light text-dark border">{{ entity }} <span class="text-secondary">({{ count }})</span></span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
+                  
+                  {% if details.top_topics %}
+                  <div>
+                    <h6 class="fw-bold">Top Topics</h6>
+                    <ul class="list-group list-group-flush">
+                      {% for topic in details.top_topics %}
+                      <li class="list-group-item px-0 py-1 border-0">
+                        <i class="bi bi-chat-square-text text-secondary me-2"></i>{{ topic }}
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          <!-- Social Media Analysis Section -->
+          <div class="mt-5 mb-4">
+            <div class="d-flex align-items-center mb-4">
+              <h5 class="fw-bold mb-0">
+                <i class="bi bi-share me-2"></i>Social Media Analysis
+              </h5>
+              <div class="ms-auto">
+                <span class="badge bg-info me-1">Twitter</span>
+                <span class="badge bg-primary me-1">Facebook</span>
+                <span class="badge bg-danger me-1">Instagram</span>
+                <span class="badge bg-dark me-1">Reddit</span>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              {% for source, details in social_media_analysis.items %}
+              <div class="col-md-6">
+                <div class="card h-100 border-0 shadow-sm">
+                  <div class="card-header p-3 bg-info bg-opacity-10 border-bottom border-info">
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-chat-quote-fill text-info me-2"></i>
+                      <h6 class="card-title fw-bold mb-0">{{ source }}</h6>
+                      <span class="badge bg-info ms-auto">{{ details.platform }}</span>
+                    </div>
+                  </div>
+                  <div class="card-body p-3">
+                    {% if details.required_data == 'sentiment' or details.required_data == 'both' %}
+                    <div class="mb-3">
+                      <h6 class="fw-bold">Sentiment Analysis</h6>
+                      <div class="progress mb-2" style="height: 10px;">
+                        {% with total=details.sentiment_counts.positive|add:details.sentiment_counts.neutral|add:details.sentiment_counts.negative %}
+                        {% if total > 0 %}
+                        <div class="progress-bar bg-success" role="progressbar" 
+                            style="width: {% widthratio details.sentiment_counts.positive total 100 %}%" 
+                            aria-valuenow="{{ details.sentiment_counts.positive }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
+                        <div class="progress-bar bg-warning" role="progressbar" 
+                            style="width: {% widthratio details.sentiment_counts.neutral total 100 %}%" 
+                            aria-valuenow="{{ details.sentiment_counts.neutral }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
+                        <div class="progress-bar bg-danger" role="progressbar" 
+                            style="width: {% widthratio details.sentiment_counts.negative total 100 %}%" 
+                            aria-valuenow="{{ details.sentiment_counts.negative }}" aria-valuemin="0" aria-valuemax="{{ total }}"></div>
+                        {% endif %}
+                        {% endwith %}
+                      </div>
+                      <div class="d-flex justify-content-between small text-muted">
+                        <div>Positive: {{ details.sentiment_counts.positive }}</div>
+                        <div>Neutral: {{ details.sentiment_counts.neutral }}</div>
+                        <div>Negative: {{ details.sentiment_counts.negative }}</div>
+                      </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if details.top_entities %}
+                    <div class="mb-3">
+                      <h6 class="fw-bold">Key Entities</h6>
+                      <div class="d-flex flex-wrap gap-2">
+                        {% for entity, count in details.top_entities.items %}
+                        <span class="badge bg-light text-dark border">{{ entity }} <span class="text-secondary">({{ count }})</span></span>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% elif details.top_entities|length == 0 %}
+                    <div class="mb-3">
+                      <h6 class="fw-bold">Key Entities</h6>
+                      <p class="text-muted small">No significant entities detected</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if details.top_topics %}
+                    <div>
+                      <h6 class="fw-bold">Top Topics</h6>
+                      <div class="row">
+                        {% for topic in details.top_topics %}
+                        <div class="col-md-6">
+                          <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-hash text-info me-2"></i>
+                            <span>{{ topic }}</span>
+                          </div>
+                        </div>
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% endif %}
+                  </div>
+                  <div class="card-footer bg-white p-3 border-top">
+                    <div class="d-flex align-items-center">
+                      <small class="text-muted">
+                        <i class="bi bi-clock me-1"></i>Last updated: Today
+                      </small>
+                      <button class="btn btn-sm btn-outline-info ms-auto">
+                        <i class="bi bi-eye me-1"></i>View Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="d-flex gap-3 mt-4">
+            <a href="{% url 'core:import_responses' survey.id %}" class="btn btn-success flex-grow-1">
+              <i class="bi bi-upload me-2"></i>Import More Responses
+            </a>
+            <a href="{% url 'surveys:survey_detail' survey.id %}" class="btn btn-outline-secondary flex-grow-1">
+              <i class="bi bi-arrow-left me-2"></i>Back to Survey
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %} 
+{% endblock %}
