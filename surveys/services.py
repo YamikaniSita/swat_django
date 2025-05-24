@@ -678,7 +678,7 @@ def send_questions(respondents, questions):
             payload = {
                 "api_key": api_key,
                 "numbers": "true",
-                "from": 'Nutread-A1',
+                "from": 'WGIT',
                 "text": json.dumps(dict),  # Convert batch to JSON
                 "password": passcode,
                 "advance": "true"
@@ -687,7 +687,7 @@ def send_questions(respondents, questions):
             try:
                 response = None
                 # testing preventing this from being sent
-                # response = requests.post(url, data=payload)
+                response = requests.post(url, data=payload)
                 print("Log this", response.json())
             except Exception as e:
                 logging.error(f"Failed to send SMS batch: {e}")
