@@ -1,11 +1,9 @@
 from django.db import models
-from core.models import Survey, Question, Response
-from core.models import Volunteers
 from django.utils import timezone
 
 class SurveyResponse(models.Model):
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='survey_responses')
-    volunteer = models.ForeignKey(Volunteers, on_delete=models.CASCADE)
+    survey = models.ForeignKey('core.Survey', on_delete=models.CASCADE, related_name='survey_responses')
+    volunteer = models.ForeignKey('core.Volunteers', on_delete=models.CASCADE)
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
@@ -14,15 +12,8 @@ class SurveyResponse(models.Model):
         ('abandoned', 'Abandoned')
     ], default='in_progress')
 
-    # def __str__(self):
-    #     return f"{self.volunteer.name}'s response to {self.survey.title}"
-
-    # class Meta:
-    #     unique_together = ['survey', 'volunteer']
-    #     ordering = ['-started_at']
-
 class SocialMediaSource(models.Model):
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name='social_sources')
+    survey = models.ForeignKey('core.Survey', on_delete=models.CASCADE, related_name='social_sources')
     platform = models.CharField(max_length=100, choices=[
         ('facebook', 'Facebook'),
         ('twitter', 'Twitter'),
@@ -63,7 +54,7 @@ class SocialMediaSource(models.Model):
 
     def is_token_valid(self):
         if not self.token_expires_at:
-            return True  # Long-lived tokens might not have expiration
+            return True
         return timezone.now() < self.token_expires_at
 
     class Meta:
@@ -72,7 +63,7 @@ class SocialMediaSource(models.Model):
 
 class QuestionResponse(models.Model):
     survey_response = models.ForeignKey(SurveyResponse, on_delete=models.CASCADE, related_name='question_responses')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey('core.Question', on_delete=models.CASCADE)
     answer = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -107,4 +98,4 @@ class TemplateQuestion(models.Model):
         return f"{self.text[:50]}..."
 
     class Meta:
-        ordering = ['order'] 
+        ordering = ['order']

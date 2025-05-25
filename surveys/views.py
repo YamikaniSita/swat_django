@@ -2,7 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from .models import SocialMediaSource, Survey, SurveyTemplate, SurveyResponse, Question, TemplateQuestion
+from .models import SocialMediaSource, SurveyTemplate, SurveyResponse, TemplateQuestion
+from core.models import Survey, Question
 from core.models import Project, Response, SocialMediaResponse
 from core.analytics import analyze_survey_responses
 from .forms import SurveyForm, QuestionForm, SurveyTemplateForm, TemplateQuestionForm, SocialMediaSourceForm

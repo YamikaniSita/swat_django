@@ -306,11 +306,12 @@ def import_volunteers_from_excel(excel_file):
     Returns:
         tuple: (success_count, error_count, errors)
     """
+    from django.utils.dateparse import parse_date
     try:
         # Read the Excel file
         df = pd.read_excel(excel_file)
         # Validate required columns
-        required_columns = ['Name', 'Phone Number', 'Region']
+        required_columns = ['Name', 'Phone Number', 'Region', 'Sex', 'Birthdate']
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             raise ValidationError(f"Missing required columns: {', '.join(missing_columns)}")
@@ -329,6 +330,8 @@ def import_volunteers_from_excel(excel_file):
                 name = str(row['Name']).strip()
                 phone_number = str(row['Phone Number']).strip()
                 region = str(row['Region']).strip()
+                sex = str(row['Sex']).strip()
+                birthdate = parse_date(str(row['Birthdate']).strip().split()[0])
                 
                 if not name or not phone_number or not region:
                     continue
@@ -366,6 +369,8 @@ def import_volunteers_from_excel(excel_file):
                     name = name,
                     phone_number = phone_number,
                     region = region,
+                    birthdate = birthdate,
+                    sex = sex,
                     location_id = constituency
                 )
                 success_count += 1

@@ -1,6 +1,7 @@
 from django import forms
 from django.utils import timezone
-from .models import SocialMediaSource, Survey, Question, SurveyTemplate, TemplateQuestion
+from .models import SocialMediaSource, SurveyTemplate, SurveyResponse, TemplateQuestion
+from core.models import Survey, Question
 from core.models import Project, SWOTCategory
 from datetime import datetime
 
