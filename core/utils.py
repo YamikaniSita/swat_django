@@ -425,8 +425,7 @@ def get_ai_recommendations(full_report):
     """
     try:
         prompt = build_recommendation_prompt(full_report)
-        # client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        client = Groq(api_key="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")  # Replace with your actual API key
+        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         chat_completion = client.chat.completions.create(
             messages=[
                 {
