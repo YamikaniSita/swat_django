@@ -425,6 +425,8 @@ def get_ai_recommendations(full_report):
     """
     try:
         prompt = build_recommendation_prompt(full_report)
+        api_key=os.getenv("GROQ_API_KEY")
+        print(f"Using Groq API key: {api_key}")
         client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         chat_completion = client.chat.completions.create(
             messages=[
@@ -439,6 +441,7 @@ def get_ai_recommendations(full_report):
         response = chat_completion.choices[0].message.content
         return response
     except Exception as e:
+        print(f"Error generating AI recommendations: {str(e)}")
         return "AI Recommendations are not available at the moment. Please try again later."
     
 
