@@ -131,7 +131,6 @@ def import_responses(request, survey_id):
             context = {
                 'survey': survey,
                 'success_count': success_count,
-                
                 'error_count': error_count,
                 'errors': errors,
                 'swot_summary': swot_summary
@@ -171,6 +170,7 @@ def swot_analysis(request, survey_id):
     social_responses = SocialMediaResponse.objects.filter(survey=survey)
     
     # Get analytics including word map
+    print(questionnaire_response)
     snippet = analyze_survey_responses(list(responses) + list(social_responses), word_map=False)
     print(snippet)
     context = {

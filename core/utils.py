@@ -1,4 +1,5 @@
 from itertools import accumulate
+import string
 import pandas as pd
 import os
 import openpyxl
@@ -71,6 +72,12 @@ def import_responses_from_excel(survey_id, excel_file):
                     translated_from = response_text
                     response_text = request_result[0]
                     # Perform NLP analysis
+                    response_text = response_text.translate(str.maketrans('', '', string.punctuation))
+                    print(response_text)
+                    analysis = analyze_text(response_text)
+                else:
+                    response_text = response_text.translate(str.maketrans('', '', string.punctuation))
+                    print(response_text)
                     analysis = analyze_text(response_text)
                 volunteer = Volunteers.objects.filter(phone_number = volunteer_phone_number).first()
                 
@@ -84,7 +91,7 @@ def import_responses_from_excel(survey_id, excel_file):
                     sentiment_label=analysis['sentiment_label'],
                     translated_from = translated_from
                 )
-                print(a)
+                # print(a)
                 success_count += 1
                 
             except Exception as e:
@@ -116,7 +123,7 @@ def get_swot_summary(survey_id):
     }
     
     # Get all responses for the survey
-    responses = Response.objects.filter(survey=survey, question__required_data__in=["both", "sentiment"]).select_related('question', 'question__swot_category')
+    responses = Response.objects.filter(survey=survey, question__required_data__in=["all", "sentiment"]).select_related('question', 'question__swot_category')
     for response in responses:
         category_name = response.question.swot_category.name.lower()
         if category_name in summary:
@@ -189,9 +196,9 @@ def get_survey_statistics(survey_id):
     
     # Calculate sentiment distribution
     sentiment_counts = {
-        'positive': responses.filter(sentiment_label='positive',  question__required_data__in=["both", "sentiment"]).count(),
-        'neutral': responses.filter(sentiment_label='neutral',  question__required_data__in=["both", "sentiment"]).count(),
-        'negative': responses.filter(sentiment_label='negative',  question__required_data__in=["both", "sentiment"]).count(),
+        'positive': responses.filter(sentiment_label='positive',  question__required_data__in=["all", "sentiment"]).count(),
+        'neutral': responses.filter(sentiment_label='neutral',  question__required_data__in=["all", "sentiment"]).count(),
+        'negative': responses.filter(sentiment_label='negative',  question__required_data__in=["all", "sentiment"]).count(),
     }
    
     avg_sentiment = responses.filter(question__required_data = "topics").values('sentiment_score', 'question__required_data').aggregate(

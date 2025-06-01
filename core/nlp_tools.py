@@ -17,14 +17,16 @@ import base64
 from collections import Counter
 
 # Download required NLTK data
-nltk.download('vader_lexicon')
-nltk.download('stopwords')
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('words')
-nltk.download('wordnet')
-
+# nltk.download('vader_lexicon')
+# nltk.download('stopwords')
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('maxent_ne_chunker')
+# nltk.download('words')
+# nltk.download('wordnet')
+# nltk.download('punkt_tab')
+# nltk.download('averaged_perceptron_tagger_eng')
+nltk.download('all')
 # Initialize NLP tools
 stop = set(stopwords.words('english'))
 exclude = set(string.punctuation)
@@ -163,7 +165,9 @@ def generate_word_map(texts, width=800, height=400):
 def analyze_survey_responses(responses):
     """Analyze all responses for a survey and generate visualizations."""
     # Get all response texts
+
     texts = [r.text for r in responses if r.text]
+    print(texts)
     
     # Generate word map
     word_map = generate_word_map(texts)

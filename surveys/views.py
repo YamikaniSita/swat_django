@@ -41,8 +41,8 @@ def survey_detail(request, pk):
     social_responses = SocialMediaResponse.objects.filter(survey=survey)
     
     # Get analytics including word map
-    analytics = analyze_survey_responses(list(responses) + list(social_responses))
-    print(analytics)
+    analytics = analyze_survey_responses(list(responses) + list(social_responses), word_map=True)
+    print('ANALYTICS', analytics)
     context = {
         'survey': survey,
         'responses': responses,

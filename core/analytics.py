@@ -16,7 +16,7 @@ import re
 from spacy.matcher import PhraseMatcher
 from .models import Question, Response, SocialMediaResponse
 from surveys.models import SocialMediaSource
-
+import string
 # Download required NLTK data
 try:
     nltk.data.find('tokenizers/punkt')
@@ -65,6 +65,7 @@ except OSError:
 def preprocess_text(text):
     """Preprocess text for analysis."""
     # Tokenize
+    text = re.sub(r'[^\w\s]', '', text, flags=re.UNICODE)
     tokens = word_tokenize(text.lower())
     
     # Remove stopwords
@@ -153,6 +154,9 @@ def analyze_text(text):
     # Clean text
     text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
     text = re.sub(r'\@\w+|\#', '', text)
+    # Remove punctuation
+    text = text.translate(str.maketrans('', '', string.punctuation))
+
     
     # Get sentiment using VADER
     sia = SentimentIntensityAnalyzer()
@@ -218,11 +222,11 @@ def analyze_survey_responses(responses, word_map=False):
             data_required = getattr(response.social_source, 'required_data')
         print(data_required)
 
-        if data_required in ['both', 'sentiment']:
+        if data_required in ['all', 'sentiment']:
             analysis = analyze_text(response.text)
             sentiment_counts[analysis['sentiment']] += 1
         
-        if data_required in ['both', 'topics']:
+        if data_required in ['all', 'topics']:
             analysis = analyze_text(response.text)
             all_entities.extend(analysis['entities'])
             text_for_topics.append(response.text)
@@ -275,16 +279,16 @@ def generate_survey_report(survey):
     for question in question_responses:
         responses = Response.objects.filter(question=question)
         if responses.exists():
-            data_required = getattr(question, 'required_data', 'both')
+            data_required = getattr(question, 'required_data', 'all')
             sentiment_counts = {'positive': 0, 'neutral': 0, 'negative': 0}
             all_entities = []
             text_for_topics = []
             for response in responses:
-                if data_required in ['both', 'sentiment']:
+                if data_required in ['all', 'sentiment']:
                     analysis = analyze_text(response.text)
                     sentiment_counts[analysis['sentiment']] += 1
 
-                if data_required in ['both', 'topics']:
+                if data_required in ['all', 'topics']:
                     analysis = analyze_text(response.text)
                     all_entities.extend(analysis['entities'])
                     text_for_topics.append(response.text)
@@ -304,17 +308,17 @@ def generate_survey_report(survey):
         sentiment_counts = {'positive': 0, 'neutral': 0, 'negative': 0}
         all_entities = []
         text_for_topics = []
-        data_required = getattr(social_sources, 'required_data', 'both')
+        data_required = getattr(social_sources, 'required_data', 'all')
         print(data_required)
         for social_response in SocialMediaResponse.objects.filter(survey=survey, social_source=social_sources):
             print(social_response.text)
             if not social_response.text:
                 continue
-            if data_required in ['both', 'sentiment']:
+            if data_required in ['all', 'sentiment']:
                 analysis = analyze_text(social_response.text)
                 sentiment_counts[analysis['sentiment']] += 1
 
-            if data_required in ['both', 'topics']:
+            if data_required in ['all', 'topics']:
                 analysis = analyze_text(social_response.text)
                 all_entities.extend(analysis['entities'])
                 text_for_topics.append(social_response.text)
