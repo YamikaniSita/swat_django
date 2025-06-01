@@ -338,7 +338,8 @@ class FacebookService:
                         topics=comment_analysis.get('topics', []),
                         entities=comment_analysis.get('entities', []),
                         translated_from=translated_from,
-                        created_at=comment_date
+                        created_at=comment_date,
+                        social_source=source
                     )
                     
                     source.total_comments += 1
@@ -639,7 +640,16 @@ def start_survey_collection(survey):
             location = Location.objects.filter(id = survey.project.location_id).first()
             consituencies = get_constituencies_under(location)
             respondents = Volunteers.objects.filter(location_id__in=consituencies)
-            send_questions(respondents, questions_set)
+
+            if not respondents.exists():
+                print('a')
+                error_msg = "No respondents found for the survey location"
+                logger.error(error_msg)
+                error_messages.append(error_msg)
+            else:
+                logger.info(f"Found {respondents.count()} respondents for the survey")
+                # Send questions to respondents
+                # send_questions(respondents, questions_set)
 
             
         # Return error messages if any occurred
@@ -674,7 +684,6 @@ def send_questions(respondents, questions):
         dict = {}
         for respondent in respondents:
             dict[respondent.phone_number]=question.text
-            print(question, respondent)
             payload = {
                 "api_key": api_key,
                 "numbers": "true",

@@ -393,7 +393,7 @@ def import_volunteers_from_excel(excel_file):
         raise ValidationError(f"Error processing Excel file: {str(e)}")
     
 def build_recommendation_prompt(full_report):
-    lines = ["Below is a summary report from a survey (SMS qestionnaire-SWOT assessment all open ended questions and social media analytics) conducted for a candidate running for MP in a rural area, we conducted NLP analysis:\n"]
+    lines = ["Below is a summary report from a survey (SMS qestionnaire-SWOT assessment all open ended questions, we also obtained some social media comments from related posts on the candidates pages in the reported they are tagged as 'Social Media Analysis') conducted for a candidate running for MP in a rural area, we conducted NLP analysis:\n"]
     count = 1
 
     for section in full_report:
@@ -425,7 +425,8 @@ def get_ai_recommendations(full_report):
     """
     try:
         prompt = build_recommendation_prompt(full_report)
-        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        # client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        client = Groq(api_key="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")  # Replace with your actual API key
         chat_completion = client.chat.completions.create(
             messages=[
                 {

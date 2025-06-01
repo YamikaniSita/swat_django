@@ -123,7 +123,7 @@ class SocialMediaResponse(models.Model):
         ('instagram', 'Instagram')
     ])
     source_id = models.CharField(max_length=100)  # Original post ID from the platform
-    text = models.TextField()
+    text = models.TextField() 
     translated_from = models.TextField(null=True)
     sentiment_score = models.FloatField(null=True, blank=True)
     sentiment_label = models.CharField(max_length=20, choices=[
@@ -134,7 +134,7 @@ class SocialMediaResponse(models.Model):
     topics = models.JSONField(default=list)
     entities = models.JSONField(default=list)
     created_at = models.DateTimeField()
-    social_source = models.ForeignKey('surveys.SocialMediaSource', on_delete=models.CASCADE, null=True, blank=True)
+    social_source = models.ForeignKey('surveys.SocialMediaSource', on_delete=models.CASCADE, null=False)
     
 
 

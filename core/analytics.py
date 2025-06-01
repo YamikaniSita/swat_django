@@ -213,11 +213,11 @@ def analyze_survey_responses(responses, word_map=False):
     text_for_word_map = []
 
     for response in responses:
+        # print(response.req)
         if not response.text:
             continue
         try:
             data_required = getattr(response.question, 'required_data')
-            print(data_required)
         except:
             data_required = getattr(response.social_source, 'required_data')
         print(data_required)

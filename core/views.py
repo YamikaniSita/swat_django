@@ -172,7 +172,6 @@ def swot_analysis(request, survey_id):
     # Get analytics including word map
     print(questionnaire_response)
     snippet = analyze_survey_responses(list(responses) + list(social_responses), word_map=False)
-    print(snippet)
     context = {
         'survey': survey,
         'swot_summary': [],

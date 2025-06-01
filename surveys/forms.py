@@ -111,12 +111,13 @@ class QuestionForm(forms.ModelForm):
 class SocialMediaSourceForm(forms.ModelForm):
     class Meta:
         model = SocialMediaSource
-        fields = ['platform', 'source_type', 'source_id', 'source_name', 'topics', 'access_token']
+        fields = ['platform', 'source_type', 'source_id', 'source_name', 'required_data', 'topics', 'access_token']
         widgets = {
             'platform': forms.Select(attrs={'class': 'form-select'}),
             'source_type': forms.Select(attrs={'class': 'form-select'}),
             'source_id': forms.TextInput(attrs={'class': 'form-control'}),
             'source_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'required_date': forms.TextInput(attrs={'class': 'form-control'}),
             'topics': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Enter topics separated by commas'}),
             'access_token': forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter Facebook Page Access Token'})
         }
